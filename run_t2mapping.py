@@ -6,8 +6,8 @@ import time
 import SimpleITK as sitk
 from functools import partial
 
-from t2map_utils import *
-from metadata_utils import *
+from utils.t2map_utils import *
+from utils.metadata_utils import *
 import argparse
 
 # Set functions

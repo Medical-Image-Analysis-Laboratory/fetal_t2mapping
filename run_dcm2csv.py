@@ -1,6 +1,6 @@
 import os
-from dcm_utils import *
-from qmri_utils import *
+from utils.dcm_utils import *
+from utils.qmri_utils import *
 import pandas as pd
 import argparse
 

@@ -1,5 +1,5 @@
-from qmri_utils import *
-from metadata_utils import *
+from utils.qmri_utils import *
+from utils.metadata_utils import *
 import argparse
 
 def process_qmri(bids_path,metadata,in_vivo,low_field):
