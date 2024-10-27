@@ -8,7 +8,7 @@ from scipy.interpolate import RegularGridInterpolator
 from skimage import restoration
 import re
 import pandas as pd
-from dcm_utils import mk_bids_dir
+from .dcm_utils import mk_bids_dir
 
 def get_img_path(bids_path, acq, type:str="anat"):
 

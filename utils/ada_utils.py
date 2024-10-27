@@ -1,5 +1,5 @@
-from dcm_utils import csv2df
-from qmri_utils import *
+from .metadata_utils import csv2df
+from .qmri_utils import *
 
 import os
 import nibabel as nib
