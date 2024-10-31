@@ -215,9 +215,9 @@ def get_t2_per_roi(t2map,feta,ho,labels_ho,jhu,labels_jhu):
 
     return t2ho, t2jhu, pd.DataFrame(t2jhu_csv),pd.DataFrame(t2ho_csv)
 
-def plot_cov_boxplot(t2jhu,t2ho,wm_lst, gm_lst):
+def plot_cov_boxplot_new(t2jhu,t2ho,wm_lst, gm_lst):
     colors = ['#5ab6b1','#1e4747']
-    facecolors = ['#36a9e1','#2fac66','#e94e1b']
+    facecolors = ['#2fac66','#2fac66','#2fac66','#6A8EAE']
     for t2,tissuetype,tiss_list,j in zip([t2jhu,t2ho],["White Matter","Cortical Gray Matter"],[wm_lst,gm_lst],[1,2]):
         print(tissuetype)
         CoV_interrun = []
@@ -229,7 +229,7 @@ def plot_cov_boxplot(t2jhu,t2ho,wm_lst, gm_lst):
             if len(roi_mean) > 1 :
                 CoV_interrun.append(100*np.std(roi_mean)/np.mean(roi_mean))
                 if 100*np.std(roi_mean)/np.mean(roi_mean) > 15:
-                    print(t2[sub][ses][index],t2[sub][ses][index]['name'])
+                    print(t2[sub][ses][index]['name'])
 
         CoV_interses = []
         for index in tiss_list:
@@ -250,14 +250,25 @@ def plot_cov_boxplot(t2jhu,t2ho,wm_lst, gm_lst):
             if len(roi_mean) > 1 :
                 CoV_intersub.append(100*np.std(roi_mean)/np.mean(roi_mean))
                 if 100*np.std(roi_mean)/np.mean(roi_mean) > 15:
-                    print(t2[sub]['ses-01'][index],t2[sub]['ses-01'][index]['name'])
+                    print(t2[sub]['ses-01'][index]['name'])
+
+        CoV_intersub_hf = []
+        for index in tiss_list:
+            roi_mean = []
+            for sub in ['sub-002','sub-003','sub-004','sub-005','sub-006','sub-007','sub-008','sub-009','sub-010','sub-011']:
+                roi_mean.append(t2[sub]['ses-02'][index]['mean'])
+            roi_mean = [x for x in roi_mean if not np.isnan(x)]
+            if len(roi_mean) > 1 :
+                CoV_intersub_hf.append(100*np.std(roi_mean)/np.mean(roi_mean))
+                if 100*np.std(roi_mean)/np.mean(roi_mean) > 15:
+                    print(t2[sub]['ses-01'][index]['name'])
 
         #CoVs = [CoV_interrun, CoV_interses, CoV_intersub]
-        CoVs = [ CoV_interrun, CoV_interses, CoV_intersub]
+        CoVs = [ CoV_interrun, CoV_interses, CoV_intersub, CoV_intersub_hf]
 
-        plt.subplots(figsize=(3,4))
+        plt.subplots(figsize=(4,4))
 
-        for CoV, pos,cov_col in zip(CoVs,range(1,4),facecolors):
+        for CoV, pos,cov_col in zip(CoVs,range(1,5),facecolors):
 
             # Generate random x-values for scatter plot
             random_x = np.random.rand(len(CoV)) * 2 + 1  # Random x-values between 1 and 3
@@ -273,9 +284,9 @@ def plot_cov_boxplot(t2jhu,t2ho,wm_lst, gm_lst):
             box_x = [item.get_xdata() for item in bplot['whiskers']]
             box_width = box_x[1][1] - box_x[0][1]  # Width of the boxplot
             center_x = (box_x[0][1] + box_x[1][1]) / 2  # Center x-coordinate of the boxplot
-            x_min = pos - 0.5 / 4  # Minimum x-value for random_x
-            x_max = pos + 0.5 / 4  # Maximum x-value for random_x
-            print(f'MEAN COV: {np.mean(CoV)}')
+            x_min = pos - 0.5 / 5  # Minimum x-value for random_x
+            x_max = pos + 0.5 / 5  # Maximum x-value for random_x
+            print(f'MEAN COV: {np.mean(CoV), np.std(CoV), len(CoV)}')
             # Generate random x-values for scatter plot
             random_x = np.random.uniform(x_min, x_max, len(CoV))
 
@@ -283,16 +294,18 @@ def plot_cov_boxplot(t2jhu,t2ho,wm_lst, gm_lst):
             plt.scatter(random_x, CoV, alpha=0.4, color='gray',edgecolors='none',zorder=2)
 
 
+        print('\na=0.001',0.001 / len(tiss_list))
+        print('a=0.05',0.05 / len(tiss_list))
+        print('a=0.01',0.01 / len(tiss_list))
+
         # wilcoxon test
         t_statistic, p_value = wilcoxon(CoV_interrun,CoV_interses)
-        print("RUN vs SES ANALYSIS")
+        print("\nRUN vs SES ANALYSIS")
         print("T-statistic:", np.round(t_statistic))
         print("P-value:", p_value)
 
         # Interpret the results
-        print('a=0.001',0.001 / len(tiss_list))
-        print('a=0.05',0.05 / len(tiss_list))
-        print('a=0.01',0.01 / len(tiss_list))
+        
         alpha = 0.01 / len(tiss_list)
         if p_value < alpha:
             print("REJECT the null hypothesis: There is a significant difference between the means of the two samples.\n\n")
@@ -300,7 +313,7 @@ def plot_cov_boxplot(t2jhu,t2ho,wm_lst, gm_lst):
             print("DO NOT REJECT the null hypothesis: There is no significant difference between the means of the two samples.\n\n")
         
         # wilcoxon test
-        t_statistic, p_value = mannwhitneyu(CoV_intersub,CoV_interses)
+        t_statistic, p_value = wilcoxon(CoV_intersub,CoV_interses)
         print("SES vs SUB COV ANALYSIS")
         print("T-statistic:", np.round(t_statistic))
         print("P-value:", p_value)
@@ -313,20 +326,471 @@ def plot_cov_boxplot(t2jhu,t2ho,wm_lst, gm_lst):
             print("DO NOT REJECT the null hypothesis: There is no significant difference between the means of the two samples.\n\n")
 
 
+        # wilcoxon test
+        t_statistic, p_value = wilcoxon(CoV_intersub,CoV_intersub_hf)
+        print("0.55 vs 1.5 COV ANALYSIS")
+        print("T-statistic:", np.round(t_statistic))
+        print("P-value:", p_value)
+
+        # Interpret the results
+        alpha = 0.01 / len(tiss_list)
+        if p_value < alpha:
+            print("REJECT the null hypothesis: There is a significant difference between the means of the two samples.\n\n")
+        else:
+            print("DO NOT REJECT the null hypothesis: There is no significant difference between the means of the two samples.\n\n")
+
+
+
         plt.ylabel('CoV (%)',fontsize=13)
         #plt.title(f'CoV of {tissuetype} (%)')
         plt.grid('on',zorder =0)
         if tissuetype == "White Matter":
-            plt.ylim([0,8])
+            plt.ylim([0,10])
             plt.yticks([0,1,2,3,4,5,6,7,8],fontsize=13)
         else:
-            plt.ylim([0,20])
+            plt.ylim([0,25])
             plt.yticks([0,2,5,5,10,15,20], fontsize=13)
         
-        plt.xticks([1,2,3], ['inter\nrun','inter\nsession', 'inter\nsubject'],fontsize=13)
+        plt.xticks([1,2,3,4], ['inter\nrun\n(0.55T)','inter\nsession\n(0.55T)', 'inter\nsubject\n(0.55T)', 'inter\nsubject\n(1.5T)'],fontsize=12)
         #plt.xticks([1,2], ['inter-run','inter-ses'])
         #plt.savefig(f"/home/mroulet/Desktop/final/cov_{str(i)}.pdf")
         plt.savefig(f'/home/mroulet/Documents/Data/qMRI/CHUV/freemax/projects/prj-004/ada/figures/cov_{str(j)}_repeat.pdf')
+        plt.show()
+
+def plot_pearson_corr_new(t2jhu,t2ho,wm_lst, gm_lst):
+
+    ## Regression LINE
+    ## INTER-RUN ###################################################################################
+    k = 0
+    # Define the pattern to match text within parentheses
+    pattern = r'\([^)]*\)'
+    colors = ['#5ab6b1','#1e4747']
+    stat = {}
+    lims = [[70,100], [90,120]]
+    #lims = [[100,140], [120,220]]
+    for t2,tissue_lst,tissuetype,lim,tisscolor in zip([t2jhu,t2ho],[wm_lst,gm_lst],["White Matter","Cortical Gray Matter"],lims,colors):
+        k+=1
+        data_x_std = []
+        data_y_std = []
+        data_x_mean = []
+        data_y_mean = []
+
+        for index in tissue_lst:
+            data_x_mean.append(t2['sub-003']['ses-03'][index]["mean"])
+            data_x_std.append(t2['sub-003']['ses-03'][index]["std"])
+
+        for index in tissue_lst:
+            data_y_mean.append(t2['sub-003']['ses-04'][index]["mean"])
+            data_y_std.append(t2['sub-003']['ses-04'][index]["std"])
+
+        data_mean = np.stack((data_x_mean, data_y_mean), axis=1)
+        data_std = np.stack((data_x_std, data_y_std), axis=1)
+
+        # Find rows containing NaN
+        nan_rows = np.isnan(data_mean).any(axis=1)
+
+        # Filter out rows containing NaN
+        data_mean = data_mean[~nan_rows]
+        data_std = data_std[~nan_rows]
+
+        print(data_std.shape)
+        print(data_mean.shape)
+
+        # Calculate regression line
+        slope, intercept, r_value, p_value, std_err = stats.linregress(data_mean[:,0],data_mean[:,1])
+        print(r_value, p_value)
+        line_x = np.array([0,500])
+        line_y = slope * line_x + intercept
+
+        # Create scatter plot with error bars
+        plt.figure(figsize=(4, 4))
+
+        #for i in range(len(data_std)):
+        #    plt.errorbar(data_mean[i,0], data_mean[i,1], xerr=data_std[i,0], yerr=data_std[i,1], fmt='o', markersize=10, color='#555555', ecolor='gray', capsize=5)
+
+        plt.scatter(data_mean[:,0], data_mean[:,1], color=tisscolor, marker='o', s=50, edgecolor='none',alpha=1)
+
+        # Plot regression line
+        plt.plot(line_x, line_y, color=tisscolor, linestyle='--', label='Regression Line')
+        plt.plot([0,500],[0,500],color = 'black',linestyle = '--', alpha= 0.2)
+
+        # Add labels and title
+        plt.xlabel('Run 1 - T2 (ms)',fontsize=13)
+        plt.ylabel('Run 2 - T2 (ms)',fontsize=13)
+        #plt.title('Inter-Session')
+        plt.xlim(lim)
+        plt.ylim(lim)
+
+        # Add Pearson correlation coefficient and p-value to the plot
+        #plt.text(0.1, 0.9, f'Pearson correlation coefficient: {r_value:.2f}\nP-value: {p_value:.4f}', transform=plt.gca().transAxes, fontsize=10)
+        if tissuetype == 'White Matter':
+            decision= '*' if p_value < 0.05/27 else 'ns'
+            decision= '**' if p_value < 0.01/27 else '*'
+            decision= '***' if p_value < 0.001/27 else '**'
+        else:
+            decision= '*' if p_value < 0.05/41 else 'ns'
+            decision= '**' if p_value < 0.01/41 else '*'
+            decision= '***' if p_value < 0.001/41 else '**'
+        plt.text(0.99, 0.01, f'Pearson correlation coef.: {r_value:.2f}\n{decision} p = {p_value:.1e}', transform=plt.gca().transAxes, fontsize=11,horizontalalignment='right')
+
+        # Add legend
+        #plt.legend(loc='lower right')
+        plt.xticks(fontsize=13)
+        plt.yticks(fontsize=13)
+        # Show plot
+        plt.grid(True,zorder=0)
+        plt.savefig(f'/home/mroulet/Documents/Data/qMRI/CHUV/freemax/projects/prj-004/ada/figures/reg_{str(k)}.pdf')
+        plt.show()
+
+    ## INTER-SESSION ###################################################################################
+
+    # Define the pattern to match text within parentheses
+    pattern = r'\([^)]*\)'
+    colors = ['#5ab6b1','#1e4747']
+    stat = {}
+    for t2,tissue_lst,tissuetype,lim,tisscolor in zip([t2jhu,t2ho],[wm_lst,gm_lst],["White Matter","Cortical Gray Matter"],lims,colors):
+        k+=1
+        data_x_std = []
+        data_y_std = []
+        data_x_mean = []
+        data_y_mean = []
+
+        for index in tissue_lst:
+            data_x_mean.append(t2['sub-003']['ses-01'][index]["mean"])
+            data_x_std.append(t2['sub-003']['ses-01'][index]["std"])
+
+        for index in tissue_lst:
+            data_y_mean.append(t2['sub-003']['ses-04'][index]["mean"])
+            data_y_std.append(t2['sub-003']['ses-04'][index]["std"])
+
+        data_mean = np.stack((data_x_mean, data_y_mean), axis=1)
+        data_std = np.stack((data_x_std, data_y_std), axis=1)
+
+        # Find rows containing NaN
+        nan_rows = np.isnan(data_mean).any(axis=1)
+
+        # Filter out rows containing NaN
+        data_mean = data_mean[~nan_rows]
+        data_std = data_std[~nan_rows]
+
+        print(data_std.shape)
+        print(data_mean.shape)
+
+        # Calculate regression line
+        slope, intercept, r_value, p_value, std_err = stats.linregress(data_mean[:,0],data_mean[:,1])
+        print(r_value, p_value)
+        line_x = np.array([0,500])
+        line_y = slope * line_x + intercept
+
+        # Create scatter plot with error bars
+        plt.figure(figsize=(4,4))
+
+        #for i in range(len(data_std)):
+        #    plt.errorbar(data_mean[i,0], data_mean[i,1], xerr=data_std[i,0], yerr=data_std[i,1], fmt='o', markersize=10, color='#555555', ecolor='gray', capsize=5)
+
+        plt.scatter(data_mean[:,0], data_mean[:,1], color=tisscolor, marker='o', s=50, edgecolor='none',alpha=1)
+
+        # Plot regression line
+        plt.plot(line_x, line_y, color=tisscolor, linestyle='--', label='Regression Line')
+        plt.plot([0,500],[0,500],color = 'black',linestyle = '--', alpha= 0.2)
+
+        # Add labels and title
+        plt.xlabel('Session 1 - T2 (ms)',fontsize=13)
+        plt.ylabel('Session 2 - T2 (ms)',fontsize=13)
+        #plt.title('Inter-Subject')
+        plt.xlim(lim)
+        plt.ylim(lim)
+        plt.xticks(fontsize=13)
+        plt.yticks(fontsize=13)
+
+        # Add Pearson correlation coefficient and p-value to the plot
+        #plt.text(0.1, 0.9, f'Pearson correlation coefficient: {r_value:.2f}\nP-value: {p_value:.4f}', transform=plt.gca().transAxes, fontsize=10)
+        if tissuetype == "White Matter":
+            decision= '*' if p_value < 0.05/27 else 'ns'
+            decision= '**' if p_value < 0.01/27 else '*'
+            decision= '***' if p_value < 0.001/27 else '**'
+            plt.text(0.99, 0.01, f'Pearson correlation coef.: {r_value:.2f}\n{decision} p = {p_value:.1e}', transform=plt.gca().transAxes, fontsize=11,horizontalalignment='right')
+        else:
+            decision= '*' if p_value < 0.05/41 else 'ns'
+            decision= '**' if p_value < 0.01/41 else '*'
+            decision= '***' if p_value < 0.001/41 else '**'
+            plt.text(0.99, 0.01, f'Pearson correlation coef.: {r_value:.2f}\n{decision} p = {p_value:.1e}', transform=plt.gca().transAxes, fontsize=11,horizontalalignment='right')
+
+        # Add legend
+        #plt.legend(loc='lower right')
+
+        # Show plot
+        plt.grid(True,zorder=0)
+        plt.savefig(f'/home/mroulet/Documents/Data/qMRI/CHUV/freemax/projects/prj-004/ada/figures/reg_{str(k)}.pdf')
+        plt.show()
+
+
+
+    ## INTER-SUBJECT ###################################################################################
+
+    # Define the pattern to match text within parentheses
+    pattern = r'\([^)]*\)'
+    colors = ['#5ab6b1','#1e4747']
+    stat = {}
+    for t2,tissue_lst,tissuetype,lim,tisscolor in zip([t2jhu,t2ho],[wm_lst,gm_lst],["White Matter","Cortical Gray Matter"],lims,colors):
+        k+=1
+        data_x_std = []
+        data_y_std = []
+        data_x_mean = []
+        data_y_mean = []
+
+        for index in tissue_lst:
+            data_x_mean.append(t2['sub-003']['ses-01'][index]["mean"])
+            data_x_std.append(t2['sub-003']['ses-01'][index]["std"])
+
+        for index in tissue_lst:
+            data_y_mean.append(t2['sub-004']['ses-01'][index]["mean"])
+            data_y_std.append(t2['sub-004']['ses-01'][index]["std"])
+
+        data_mean = np.stack((data_x_mean, data_y_mean), axis=1)
+        data_std = np.stack((data_x_std, data_y_std), axis=1)
+
+        # Find rows containing NaN
+        nan_rows = np.isnan(data_mean).any(axis=1)
+
+        # Filter out rows containing NaN
+        data_mean = data_mean[~nan_rows]
+        data_std = data_std[~nan_rows]
+
+        print(data_std.shape)
+        print(data_mean.shape)
+
+        # Calculate regression line
+        slope, intercept, r_value, p_value, std_err = stats.linregress(data_mean[:,0],data_mean[:,1])
+        print(r_value, p_value)
+        line_x = np.array([0,500])
+        line_y = slope * line_x + intercept
+
+        # Create scatter plot with error bars
+        plt.figure(figsize=(4,4))
+
+        #for i in range(len(data_std)):
+        #    plt.errorbar(data_mean[i,0], data_mean[i,1], xerr=data_std[i,0], yerr=data_std[i,1], fmt='o', markersize=10, color='#555555', ecolor='gray', capsize=5)
+
+        plt.scatter(data_mean[:,0], data_mean[:,1], color=tisscolor, marker='o', s=50, edgecolor='none',alpha=1)
+
+        # Plot regression line
+        plt.plot(line_x, line_y, color=tisscolor, linestyle='--', label='Regression Line')
+        plt.plot([0,500],[0,500],color = 'black',linestyle = '--', alpha= 0.2)
+
+        # Add labels and title
+        plt.xlabel('Subject 1 - T2 (ms)',fontsize=13)
+        plt.ylabel('Subject 2 - T2 (ms)',fontsize=13)
+        #plt.title('Inter-Subject')
+        plt.xlim(lim)
+        plt.ylim(lim)
+        plt.xticks(fontsize=13)
+        plt.yticks(fontsize=13)
+
+        # Add Pearson correlation coefficient and p-value to the plot
+        #plt.text(0.1, 0.9, f'Pearson correlation coefficient: {r_value:.2f}\nP-value: {p_value:.4f}', transform=plt.gca().transAxes, fontsize=10)
+        if tissuetype == "White Matter":
+            decision= '*' if p_value < 0.05/27 else 'ns'
+            decision= '**' if p_value < 0.01/27 else '*'
+            decision= '***' if p_value < 0.001/27 else '**'
+            plt.text(0.99, 0.01, f'Pearson correlation coef.: {r_value:.2f}\n{decision} p = {p_value:.1e}', transform=plt.gca().transAxes, fontsize=11,horizontalalignment='right')
+        else:
+            decision= '*' if p_value < 0.05/41 else 'ns'
+            decision= '**' if p_value < 0.01/41 else '*'
+            decision= '***' if p_value < 0.001/41 else '**'
+            plt.text(0.99, 0.01, f'Pearson correlation coef.: {r_value:.2f}\n{decision} p = {p_value:.1e}', transform=plt.gca().transAxes, fontsize=11,horizontalalignment='right')
+
+        # Add legend
+        #plt.legend(loc='lower right')
+
+        # Show plot
+        plt.grid(True,zorder=0)
+        plt.savefig(f'/home/mroulet/Documents/Data/qMRI/CHUV/freemax/projects/prj-004/ada/figures/reg_{str(k)}.pdf')
+        plt.show()
+
+    ## INTER-FIELD ###################################################################################
+    k=1
+    subs = ['sub-002','sub-003','sub-004','sub-005','sub-006','sub-007','sub-008','sub-009','sub-010','sub-011']
+    for sub in subs:
+        # Define the pattern to match text within parentheses
+        pattern = r'\([^)]*\)'
+        colors = ['#5ab6b1','#1e4747']
+        stat = {}
+        k+=1
+        for t2,tissue_lst,tissuetype,lim,tisscolor in zip([t2jhu,t2ho],[wm_lst,gm_lst],["White Matter","Cortical Gray Matter"],lims,colors):
+
+            data_x_std = []
+            data_y_std = []
+            data_x_mean = []
+            data_y_mean = []
+
+            for index in tissue_lst:
+                data_x_mean.append(t2[sub]['ses-01'][index]["mean"])
+                data_x_std.append(t2[sub]['ses-01'][index]["std"])
+
+            for index in tissue_lst:
+                data_y_mean.append(t2[sub]['ses-02'][index]["mean"])
+                data_y_std.append(t2[sub]['ses-02'][index]["std"])
+
+            data_mean = np.stack((data_x_mean, data_y_mean), axis=1)
+            data_std = np.stack((data_x_std, data_y_std), axis=1)
+
+            # Find rows containing NaN
+            nan_rows = np.isnan(data_mean).any(axis=1)
+
+            # Filter out rows containing NaN
+            data_mean = data_mean[~nan_rows]
+            data_std = data_std[~nan_rows]
+
+            print(data_std.shape)
+            print(data_mean.shape)
+
+            # Calculate regression line
+            slope, intercept, r_value, p_value, std_err = stats.linregress(data_mean[:,0],data_mean[:,1])
+            print(r_value, p_value)
+            line_x = np.array([0,500])
+            line_y = slope * line_x + intercept
+
+            # Create scatter plot with error bars
+            plt.figure(figsize=(4,4))
+
+            #for i in range(len(data_std)):
+            #    plt.errorbar(data_mean[i,0], data_mean[i,1], xerr=data_std[i,0], yerr=data_std[i,1], fmt='o', markersize=10, color='#555555', ecolor='gray', capsize=5)
+
+            plt.scatter(data_mean[:,0], data_mean[:,1], color=tisscolor, marker='o', s=50, edgecolor='none',alpha=1)
+
+            # Plot regression line
+            plt.plot(line_x, line_y, color=tisscolor, linestyle='--', label='Regression Line')
+            plt.plot([0,500],[0,500],color = 'black',linestyle = '--', alpha= 0.2)
+
+            # Add labels and title
+            plt.xlabel('0.55 T - T2 (ms)',fontsize=13)
+            plt.ylabel('1.5 T - T2 (ms)',fontsize=13)
+            #plt.title('Inter-Subject')
+            plt.xlim(lim)
+            if tissuetype != "White Matter":
+                plt.xlim([80,160])
+                plt.ylim([80,160])
+            else:
+                plt.ylim([70,105])
+                plt.xlim([70,105])
+            plt.xticks(fontsize=13)
+            plt.yticks(fontsize=13)
+
+            # Add Pearson correlation coefficient and p-value to the plot
+            #plt.text(0.1, 0.9, f'Pearson correlation coefficient: {r_value:.2f}\nP-value: {p_value:.4f}', transform=plt.gca().transAxes, fontsize=10)
+            if tissuetype == "White Matter":
+                decision= '*' if p_value < 0.05/27 else 'ns'
+                decision= '**' if p_value < 0.01/27 else '*'
+                decision= '***' if p_value < 0.001/27 else '**'
+                plt.text(0.99, 0.01, f'Pearson correlation coef.: {r_value:.2f}\n{decision} p = {p_value:.1e}', transform=plt.gca().transAxes, fontsize=11,horizontalalignment='right')
+                tiss = 'wm'
+            else:
+                decision= '*' if p_value < 0.05/41 else 'ns'
+                decision= '**' if p_value < 0.01/41 else '*'
+                decision= '***' if p_value < 0.001/41 else '**'
+                plt.text(0.99, 0.01, f'Pearson correlation coef.: {r_value:.2f}\n{decision} p = {p_value:.1e}', transform=plt.gca().transAxes, fontsize=11,horizontalalignment='right')
+                tiss = 'gm'
+
+            # Add legend
+            #plt.legend(loc='lower right')
+
+            # Show plot
+            plt.grid(True,zorder=0)
+            plt.savefig(f'/home/mroulet/Documents/Data/qMRI/CHUV/freemax/projects/prj-004/ada/figures/reg_field_{tiss}_sub-{str(k)}.pdf')
+            plt.show()
+
+def plot_violin(t2jhu,t2ho,wm_lst, gm_lst):
+    # Number of subjects and colors for WM and GM
+    subjects = 10
+    colors = ['#5ab6b1', '#1e4747']  # Color for WM and GM
+    colors_bis = ['#cee5e4', '#7c8f91']  # Color for WM and GM
+
+    # List of T2 datasets
+    t2s = [t2jhu, t2ho]  # Assuming t2jhu (WM) and t2ho (GM) are defined
+
+
+    for field,ses in zip(['lf', 'hf'], ['ses-01','ses-02']): 
+        print(field,ses)
+        roi_data = {}
+        # Collect mean values for each subject for both WM and GM
+        for t2 in t2s:
+            for sub in ['sub-002', 'sub-003', 'sub-004', 'sub-005', 'sub-006', 'sub-007', 'sub-008', 'sub-009', 'sub-010', 'sub-011']:
+                data = []
+                #print(f"Processing {sub} for T2...")
+                for index in wm_lst:
+                    mean_value = t2[sub][ses][index]["mean"]
+                    if np.isnan(mean_value):
+                        print(f"Warning: NaN found for {sub}, ROI {index}.")
+                    else:
+                        data.append(mean_value)
+                roi_data.setdefault(sub, []).append(data)  # Store data for the subject
+
+        # Organizing data for the violin plot
+        data_for_plot = [[roi_data[sub][0] for sub in roi_data], [roi_data[sub][1] for sub in roi_data]]
+
+        # Creating a violin plot
+        plt.rc('axes', axisbelow=True)
+        plt.figure(figsize=(9, 5))
+        positions = np.arange(1, subjects + 1)
+        plt.grid(linestyle='--',linewidth=0.5,zorder=-1) 
+        plt.ylim([70,260])
+        # Plot WM data
+        parts_wm = plt.violinplot(data_for_plot[0], positions=positions - 0.15, showmeans=True, showmedians=True)
+        # Plot GM data
+        parts_gm = plt.violinplot(data_for_plot[1], positions=positions + 0.15, showmeans=True, showmedians=True)
+        print(parts_wm.keys())
+        # Formatting the plot
+        plt.xticks(positions, roi_data.keys())  # Keep the original x-ticks
+        #plt.yticks([70,80,90,100,110,120,130,140,150,160])
+        plt.ylabel('T2 (ms)')
+
+        # Set colors for WM and GM
+        for pc in parts_wm['bodies']:
+            pc.set_facecolor(colors_bis[0])  # WM color
+            pc.set_alpha(0.9)
+
+        for pc in parts_gm['bodies']:
+            pc.set_facecolor(colors_bis[1])  # GM color
+            pc.set_alpha(0.9)
+
+
+        parts_gm['cmedians'].set_color(colors[1])  # GM mean color
+        parts_wm['cmedians'].set_color(colors[0])  # WM mean color
+        parts_gm['cbars'].set_color(colors[1])  # GM mean color
+        parts_wm['cbars'].set_color(colors[0])  # WM mean color
+        parts_gm['cmins'].set_color(colors[1])  # GM mean color
+        parts_wm['cmins'].set_color(colors[0])  # WM mean color
+        parts_gm['cmaxes'].set_color(colors[1])  # GM mean color
+        parts_wm['cmaxes'].set_color(colors[0])  # WM mean color
+        parts_gm['cmeans'].set_color(colors[1])  # GM mean color
+        """ parts_gm['cmedians'].set_color('black')  # GM mean color
+        parts_wm['cmedians'].set_color('black')  # WM mean color
+        parts_gm['cbars'].set_color('black')  # GM mean color
+        parts_wm['cbars'].set_color('black')  # WM mean color
+        parts_gm['cmins'].set_color('black')  # GM mean color
+        parts_wm['cmins'].set_color('black')  # WM mean color
+        parts_gm['cmaxes'].set_color('black')  # GM mean color
+        parts_wm['cmaxes'].set_color('black')  # WM mean color
+        parts_gm['cmeans'].set_color('black')  # GM mean color """
+        parts_gm['cmeans'].set_linestyle('--')  # Set mean line style to dashed
+        parts_wm['cmeans'].set_color('red')  # GM mean color
+        parts_gm['cmeans'].set_color('red')  # GM mean color
+        a=1.5
+        parts_wm['cmeans'].set_linestyle('--')  # Set mean line style to dashed
+        parts_wm['cmeans'].set_linewidth(0.75)  # Set mean line style to dashed
+        parts_gm['cmeans'].set_linewidth(0.75)  # Set mean line style to dashed
+        parts_gm['cbars'].set_linewidth(a)  # Set mean line style to dashed
+        parts_wm['cbars'].set_linewidth(a)  # Set mean line style to dashed
+        parts_gm['cmedians'].set_linewidth(a)  # Set mean line style to dashed
+        parts_wm['cmedians'].set_linewidth(a)  # Set mean line style to dashed
+        parts_wm['cmaxes'].set_linewidth(a)  # Set mean line style to dashed
+        parts_gm['cmaxes'].set_linewidth(a)  # Set mean line style to dashed
+        parts_wm['cmins'].set_linewidth(a)  # Set mean line style to dashed
+        parts_gm['cmins'].set_linewidth(a)  # Set mean line style to dashed
+
+        plt.legend(['WM', 'GM'], loc='upper left', frameon=True)
+        plt.savefig(f'/home/mroulet/Documents/Data/qMRI/CHUV/freemax/projects/prj-004/ada/figures/violin_{field}.pdf')
         plt.show()
 
 def plot_t2_boxplot(t2jhu,t2ho,wm_lst, gm_lst):
@@ -421,7 +885,7 @@ def plot_t2_boxplot(t2jhu,t2ho,wm_lst, gm_lst):
 def compute_t2_per_tissue_feta(recon_dir='recon_1mm_t2map'):
     # NOT CLEAN PATH WRITTEN RAW IN FUNCTION
     t2feta_csv = []
-    fit = 'gauss'
+    fit = 'gaussian'
     sim = '0'
     subs = ['sub-002', 'sub-003', 'sub-004', 'sub-005', 'sub-006', 'sub-007', 'sub-008', 'sub-009', 'sub-010', 'sub-011']
     for sub in subs:
@@ -429,8 +893,6 @@ def compute_t2_per_tissue_feta(recon_dir='recon_1mm_t2map'):
             sess = ['ses-01','ses-02','ses-03','ses-04']
         elif sub == 'sub-004':
             sess = ['ses-01','ses-02','ses-03']
-        elif sub == 'sub-010':
-            sess = ['ses-01']
         else:
             sess = ['ses-01','ses-02']
 

@@ -10,8 +10,8 @@ from scipy.interpolate import griddata
 import pickle
 import matplotlib.pyplot as plt
 
-from dcm_utils import *
-from qmri_utils import *
+from .dcm_utils import *
+from .qmri_utils import *
 
 ##############################################
 # Save in_vivo/in_vitro maps + in_vitro csv with statistical mean, std for each ROI

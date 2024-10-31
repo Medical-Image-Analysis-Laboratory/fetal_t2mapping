@@ -25,10 +25,11 @@ def set_fit_params(args):
         In case prior knowledge is not used regarding M0 minimal bound, that bounds must be handled voxel wise 
         and is therefore done in the fit_voxel function instead.
     """
-    if args.gaussian and not args.norm:
+    # LOW FIELD
+    if args.gaussian and args.lf and not args.norm:
         fit = 'gaussian'
-        fit_params =    {   "initial_guess": [630, 165],
-                            "param_bounds": [(600,900),(10,600)],
+        fit_params =    {   "initial_guess": [650, 165],
+                            "param_bounds": [(600,10000),(10,600)],
                             "solver": "L-BFGS-B",
                             "options": {
                                 "ftol": 1e-6,
@@ -36,10 +37,10 @@ def set_fit_params(args):
                                 "disp": False
                             }
                         }
-    elif args.gaussian_rician and not args.norm:
+    elif args.gaussian_rician and args.lf and not args.norm:
         fit = 'gaussian_rician'
-        fit_params =    {   "initial_guess": [640, 110, 40],
-                            "param_bounds": [(500,900),(30,600),(2,1000)],
+        fit_params =    {   "initial_guess": [650, 110, 40],
+                            "param_bounds": [(550,10000),(10,600),(2,1000)],
                             "solver": "L-BFGS-B",
                             "options": {
                                 "gtol": 1e-2,
@@ -48,10 +49,10 @@ def set_fit_params(args):
                                 "disp": False
                             }
                         }
-    elif args.rician and not args.norm:
+    elif args.rician and args.lf and not args.norm:
         fit = 'rician'
-        fit_params =    {   "initial_guess": [17, 40, 0.15],
-                            "param_bounds": [(550,900),(30,600),(7,200)],
+        fit_params =    {   "initial_guess": [650, 110, 40],
+                            "param_bounds": [(550,900),(10,600),(2,1000)],
                             "solver": "L-BFGS-B",
                             "options": {
                                 "gtol": 1e-2,
@@ -60,10 +61,11 @@ def set_fit_params(args):
                                 "disp": False
                             }
                         }
-    if args.gaussian and args.norm:
+    # HIGH-FIELD
+    elif args.gaussian and args.hf and not args.norm:
         fit = 'gaussian'
-        fit_params =    {   "initial_guess": [630, 165],
-                            "param_bounds": [(600,900),(10,600)],
+        fit_params =    {   "initial_guess": [890, 165],
+                            "param_bounds": [(850,30000),(10,600)],
                             "solver": "L-BFGS-B",
                             "options": {
                                 "ftol": 1e-6,
@@ -71,10 +73,10 @@ def set_fit_params(args):
                                 "disp": False
                             }
                         }
-    elif args.gaussian_rician and args.norm:
+    elif args.gaussian_rician and args.hf and not args.norm:
         fit = 'gaussian_rician'
-        fit_params =    {   "initial_guess": [640, 110, 40],
-                            "param_bounds": [(500,900),(30,600),(2,1000)],
+        fit_params =    {   "initial_guess": [890, 110, 40],
+                            "param_bounds": [(850,30000),(30,600),(2,1000)],
                             "solver": "L-BFGS-B",
                             "options": {
                                 "gtol": 1e-2,
@@ -83,10 +85,10 @@ def set_fit_params(args):
                                 "disp": False
                             }
                         }
-    elif args.rician and args.norm:
+    elif args.rician and args.hf and not args.norm:
         fit = 'rician'
         fit_params =    {   "initial_guess": [17, 40, 0.15],
-                            "param_bounds": [(550,900),(30,600),(7,200)],
+                            "param_bounds": [(850,30000),(30,600),(7,200)],
                             "solver": "L-BFGS-B",
                             "options": {
                                 "gtol": 1e-2,
@@ -95,6 +97,9 @@ def set_fit_params(args):
                                 "disp": False
                             }
                         }
+    else:
+        print("Error: Normalization is set to true though no parameters where defined yet. Please modify set_fit_params to manage.")
+        exit(1)
 
     return fit, fit_params
 
@@ -560,7 +565,7 @@ def main():
     # load metadata dataframe
     metadata = set_metadata(csv_path,args.csv,low_field)
 
-    process_t2maps(metadata, bids_path, TEs, fit, fit_params, low_field, phantom, prior, fast, norm, sim_id)
+    process_t2maps(metadata, bids_path, TEs, fit, fit_params, phantom, low_field, prior, fast, norm, sim_id)
 
 if __name__ == '__main__':
     main()

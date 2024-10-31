@@ -45,7 +45,9 @@ def prj_004(low_field):
                 '2024091319_13240000.csv', # Michael sub-007_ses-02
                 '2024091318_13560000.csv', # Felice sub-008_ses-02
                 '2024092721_25410000.csv', # Nataliia sub-009_ses-02
-                '2024102122_28450000.csv'] # Jaime sub-011_ses-02
+                '2024102616_18560000.csv', # Andreea sub-010_ses-02
+                '2024102122_28450000.csv' # Jaime sub-011_ses-02
+                ]
 
     return csvs
 
@@ -58,7 +60,7 @@ def prj_003(low_field):
         csvs = ['20240806_30540000_1.csv', # sub-001_ses-01
                 '20240806_30540000_2.csv', # sub-001_ses-02
                 '2024080811_19360000_1.csv', # sub-001_ses-03
-                '2024080811_19360000_2.csv' # sub-001_ses-04
+                '2024080811_19360000_2.csv' # sub-001_ses-04 # dont do rician fit on this, for some reason explode ram
                 ]
     else:
         print("Error: no data to process yet at 1.5 T.")
@@ -73,8 +75,8 @@ def prj_002(low_field):
     if low_field:
         # PRJ-002  - 0.55 T - IN VITRO - Headcoil (Prescan ON)
         csvs = ['20240527_095111_2.csv', # sub-001_ses-02
-                '20240527_095111_4.csv', # sub-001_ses-04
-                '20240530_092341_2.csv' # sub-001_ses-08
+                #'20240527_095111_4.csv', # sub-001_ses-04
+                #'20240530_092341_2.csv' # sub-001_ses-08
                 ]
     else:
         # PRJ-002  - 1.5 T - IN VITRO - Headcoil (Prescan ON)

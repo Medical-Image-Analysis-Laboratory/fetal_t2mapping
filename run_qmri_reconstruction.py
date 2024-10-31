@@ -55,7 +55,7 @@ def process_qmri(bids_path,metadata,in_vivo,low_field):
         #seeds = [[135,161,103],[183,127,103],[230,163,103],[208,219,103],[185,206,103]] # ses-03
         #seeds = [[133,162,106],[181,128,106],[228,164,106],[206,220,103],[183,207,103]] #  ses-04
         #seeds = [[140,150,105],[195,132,105],[229,180,105],[193,228,105],[174,209,105]] # prj-002 ses-07
-        build_phantom_labels_v2(metadata,bids_path, recon_dirname, phantom_labels_dirname,seeds,low=False)
+        #build_phantom_labels_v2(metadata,bids_path, recon_dirname, phantom_labels_dirname,seeds,low=False)
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="QMRI Reconstruction Parser",formatter_class=argparse.RawTextHelpFormatter)
