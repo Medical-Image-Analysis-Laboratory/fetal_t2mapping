@@ -14,9 +14,16 @@ import argparse
 def set_phantom_gt(low_field):
     id = ["T2-3", "T2-5", "T2-7", "T2-9", "T2-11"]
     if low_field:
-        gt = [594,284,167,80,40]
+        #gt = [594,284,167,80,40]
+        #id = ["T2-3", "T2-5", "T2-7", "T2-9", "T2-11"]
+        gt = [594,416,284,221,167,122,80,53,41] # mncl2 NMR
+        #gt = [917,657,480,343,249,184,128,92,60] # nicl2 NMR
+        id = ["T2-3","T2-4", "T2-5","T2-6", "T2-7", "T2-8","T2-9","T2-10", "T2-11"]
     else:
-        gt = [428,186,90,44,19]
+        #gt = [428,186,90,44,19]
+        gt = [1044,624,428,258,186,137,90,63,44,27,19,15,10,8] #mncl2 NMR
+        #gt = [1542,1196,872,646,458,335,238,171,122,84,59,43,30,21] # nicl2 NMR
+        id = ["T2-1","T2-2","T2-3","T2-4", "T2-5","T2-6", "T2-7", "T2-8","T2-9","T2-10", "T2-11","T2-12","T2-13", "T2-14"]
     return gt,id
 
 def set_fit_params(args):
@@ -235,6 +242,7 @@ def fit_voxel(voxel, fit, fit_params, TEeffs, reshaped_t2w,prior,norm):
     # set fit parameters
     if not prior:
         fit_params['param_bounds'][0] = (reshaped_t2w[voxel, 0],10000)
+        fit_params['param_bounds'][1] = (10,2000)
 
     # Initialize callback *********************************************************
     if fit != 'gaussian':

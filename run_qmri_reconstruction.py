@@ -41,21 +41,55 @@ def process_qmri(bids_path,metadata,in_vivo,low_field):
 
         ## 1. Resample volume
         high_res = 1.
-        run_resample_volume(metadata,high_res,bids_path,resamp_dirname,in_dirname,denoising=False)
+        #run_resample_volume(metadata,high_res,bids_path,resamp_dirname,in_dirname,denoising=False)
 
         ## 2. Interpolate 1 high resolution 3D volume from 3 low resolution volumes
-        run_reconstruct_volume(metadata, bids_path,recon_dirname,resamp_dirname, denoising=True,orient_fix_type='sag')
+        #run_reconstruct_volume(metadata, bids_path,recon_dirname,resamp_dirname, denoising=True,orient_fix_type='sag')
 
         ## 3. Build high resolution masks
-        build_phantom_masks(metadata,bids_path, recon_dirname, mask_dirname, low=False)
+        #build_phantom_masks(metadata,bids_path, recon_dirname, mask_dirname, low=False)
 
         ## 3. Build Phantom Labels
-        # PRJ-003
-        seeds = [[140,149,105],[194,129,105],[230,176,105],[195,224,105],[176,206,105]] # ses-01 / ses-02
+        # PRJ-002 - SES-01 - MNCL2 PLATE 4 - LF - HEAD COIL
+        # T2-1/2: [168,226,94],[168,221,64],
+        # T2-12/13/14: [169,200,71],[168,161,65],[168,155,104]
+        # T2-03 ---> T2-11
+        #seeds = [[168,199,43],[168,168,38],[168,141,53],[168,128,80],
+        #         [168,133,111],[169,155,133],[169,187,136],[169,213,123],[169,194,111]]
+        
+        # PRJ-002 - SES-01 - NICL2 PLATE 4 - LF - HEAD COIL
+        # T2-1/2: [129,226,94],[129,222,64],
+        # T2-12/13/14: ,[129,200,71],[128,161,65],[128,155,104]
+        #seeds = [[128,199,43],[128,170,38],[128,141,53],[128,128,80],
+        #         [129,133,111],[129,155,133],[129,187,136],[129,213,123],[129,194,111]]
+        
+        # PRJ-002 - SES-06 - MNCL2 PLATE 4 - HF - HEAD COIL
+        # T2-01 ---> T2-14
+        #seeds = [[155,221,102],[135,198,102],[134,167,102],[150,141,102],[178,129,102],[208,137,102],[227,160,102],
+        #         [229,192,102],[212,218,102],[185,230,102],[188,207,102],[154,187,102],[175,152,102],[209,173,102]]
+        
+        # PRJ-002 - SES-06 - NICL2 PLATE 4 - HF - HEAD COIL
+        # T2-01 ---> T2-14
+        #seeds = [[155,221,143],[135,198,143],[133,167,143],[149,142,143],[178,130,143],[208,138,143],[227,161,143],
+        #         [229,192,143],[212,218,142],[184,229,142],[188,207,142],[154,187,143],[175,152,143],[208,174,143]]
+
+        # PRJ-003 - SES-01/SES-02 - MNCL2 PLATE 4 - LF - BODY COIL
+        # T2-1/2: [141,207,105],[130,179,105],
+        # T2-12/-13/-14: [152,175,105],[182,150,105],[207,181,105]
+        seeds = [[139,149,105],[163,130,105],[194,129,105],[220,147,105],[229,176,105],
+                 [221,206,105],[195,225,105],[165,226,105],[176,206,105]]
+
+        # PRJ-003 - SES-01/SES-02 - NICL2 PLATE 4 - LF - BODY COIL
+        # T2-1/2: [141,207,145],[130,179,145],
+        # T2-12/13/14: ,[152,175,145],[182,150,145],[207,181,145]
+        #seeds = [[139,149,145],[163,130,145],[194,129,145],[220,147,145],[229,176,145],
+        #         [221,206,145],[195,225,145],[165,226,145],[176,206,145]]
+
+        #PRJ-003 OTHER (not used)
         #seeds = [[135,161,103],[183,127,103],[230,163,103],[208,219,103],[185,206,103]] # ses-03
         #seeds = [[133,162,106],[181,128,106],[228,164,106],[206,220,103],[183,207,103]] #  ses-04
         #seeds = [[140,150,105],[195,132,105],[229,180,105],[193,228,105],[174,209,105]] # prj-002 ses-07
-        #build_phantom_labels_v2(metadata,bids_path, recon_dirname, phantom_labels_dirname,seeds,low=False)
+        build_phantom_labels_v2(metadata,bids_path, recon_dirname, phantom_labels_dirname,seeds,low=False)
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="QMRI Reconstruction Parser",formatter_class=argparse.RawTextHelpFormatter)
@@ -108,3 +142,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# command: python run_qmri_reconstruction.py --path /home/mroulet/Documents/Data/qMRI/CHUV/freemax/ --csv 

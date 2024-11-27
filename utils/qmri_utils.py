@@ -900,7 +900,7 @@ def build_phantom_labels_v2(metadata,bids_path, recon_dir, labels_dir,seeds,low=
                 seed_img[seed] = 1
 
                 # Perform binary dilation
-                region_grown_image = sitk.BinaryDilate(seed_img, 5)
+                region_grown_image = sitk.BinaryDilate(seed_img, 6)
 
                 # Set the label value to the segmented region
                 region_grown_image *= label

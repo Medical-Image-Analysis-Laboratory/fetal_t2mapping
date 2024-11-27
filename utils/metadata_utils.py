@@ -57,10 +57,10 @@ def prj_003(low_field):
     """
     if low_field:
         # PRJ-003  - 0.55 T - IN VITRO - ABD COIL M
-        csvs = ['20240806_30540000_1.csv', # sub-001_ses-01
-                '20240806_30540000_2.csv', # sub-001_ses-02
-                '2024080811_19360000_1.csv', # sub-001_ses-03
-                '2024080811_19360000_2.csv' # sub-001_ses-04 # dont do rician fit on this, for some reason explode ram
+        csvs = ['20240806_30540000_1.csv'#, # sub-001_ses-01
+                #'20240806_30540000_2.csv', # sub-001_ses-02
+                #'2024080811_19360000_1.csv', # sub-001_ses-03
+                #'2024080811_19360000_2.csv' # sub-001_ses-04 # dont do rician fit on this, for some reason explode ram
                 ]
     else:
         print("Error: no data to process yet at 1.5 T.")
@@ -102,6 +102,7 @@ def set_metadata(csv_path, csvs,low_field):
     elif csvs[0] == 'prj-003':
         print("************************************************************************")
         print("PRJ-003 - In vitro NIST Phantom data acquired using the abdominal coil M")
+        print("Notes: only data selected for paper submission are processed.")
         print("************************************************************************")
         csvs = prj_003(low_field)
     elif csvs[0] == 'prj-002':

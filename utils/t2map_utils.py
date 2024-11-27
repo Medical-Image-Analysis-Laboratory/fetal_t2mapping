@@ -29,7 +29,7 @@ def save_nifti_maps(t2_map,k_map, sigma_map,res_map,t2map_dirname,recon_img,bids
     print(f"T2 map saved as nifti file in {t2map_dirname}")
 def save_phantom_csv(t2_map,k_map,sigma_map,label,id,gt,bids_path,acq,t2map_dirname,sim,analysis):
     # Compute mean T2 per ROI
-    n_roi = 5
+    n_roi = len(gt)
     ut2 = np.zeros(n_roi)
     uk = np.zeros(n_roi)
     usigma = np.zeros(n_roi)
